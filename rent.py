@@ -1,6 +1,11 @@
 import mysql.connector
 from deflist_rent import *
+import sys
+import os
 
+repertoire_script = os.path.dirname(os.path.abspath(__file__))
+nom_fichier = "rent.py"
+chemin_fichier = os.path.join(repertoire_script, nom_fichier)
 
 # Établir la connexion à la base de données
 connexion = mysql.connector.connect(
@@ -67,6 +72,7 @@ if choice3 == "oui":
     # Récupérer les résultats de la requête SELECT
     rows = cursor.fetchall()
 
+    print("Car ID, Couleur, Plaque, Marque, Etat")
     for row in rows:
         print(*rows)
 
@@ -116,7 +122,45 @@ if choice5 == "oui":
 else: 
     pass
 
+print()
+print("Voulez vous rendre une voiture ? (Oui/Non)")
+print()
 
+choice9 = demander_action_rent()
+
+if choice9 == "oui":
+
+    print()
+    print("Choisissez la voiture que vous souhaitez rendre:")
+    cursor.execute(f"SELECT car_id FROM car WHERE State = 'Occupée'")
     
+    rows = cursor.fetchall()
+    
+    for row in rows:
+        print(*rows)
+
+    choice10 = demander_nombre_rent()
+
+    cursor.execute(f"UPDATE car SET state = 'Libre' WHERE car_id = {choice10};")
+
+    print()
+    print("La voiture a bien été rendu !")
+
+
+else: 
+    print()
+    print("Voulez vous recommencez ? (Oui/Non)")
+    print()
+
+    choice11 = demander_action_rent()
+
+    if choice11 == "non":
+        sys.exit()
+    
+    else: 
+        os.system(f"python \"{chemin_fichier}\"")
+
+
+
 
 
