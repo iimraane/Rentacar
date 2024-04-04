@@ -2,6 +2,9 @@ import mysql.connector
 from deflist_rent import *
 import sys
 import os
+import datetime
+import timedelta
+aujourdhui = datetime.now()
 
 repertoire_script = os.path.dirname(os.path.abspath(__file__))
 nom_fichier = "rent.py"
@@ -126,12 +129,23 @@ if choice5 == "oui":
     print("Maintenant entrez la date de rendu souhaité de la voiture:")
     print()
 
-    choice8 = obtenir_date_rent()
+    while True:
+    
+        choice8 = obtenir_date_rent()
+
+        if choice8 > aujourdhui + timedelta(days=30):
+            print("La date de location est trop éloignée dans le futur. Veuillez choisir une date dans les 30 prochains jours.")
+        else:
+            break  # Sortir de la boucle si la date est valide
 
     cursor.execute(f"UPDATE rent SET start_date = CURDATE() WHERE id = {choice7};")
     cursor.execute(f"UPDATE rent SET end_date = '{choice8}' WHERE customer_id = {choice7};")
 
     connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+
+    print()
+    print("Location enregistrée")
+    print()
 
 else: 
     pass
