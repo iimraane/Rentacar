@@ -1,4 +1,6 @@
 import mysql.connector
+from deflist_rent import *
+
 
 # Établir la connexion à la base de données
 connexion = mysql.connector.connect(
@@ -15,23 +17,106 @@ cursor = connexion.cursor()
 if connexion.is_connected():
     print("Connexion réussie!")
 
-    # Insérer une nouvelle entrée dans la table 'car'
-    cursor.execute("INSERT INTO car (Brand) VALUES ('BMW');")
-    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+print("En continuant vous accepter nos CGU: https://octagonal-outrigger-c6f.notion.site/Les-CGU-094464a0eda142a9ad849f7e729965bf?pvs=4")
+print()
+print()
+print("Bienvenue dans le logiciel 'Rentacar'")
+print()
+print("Je vais proceder par étape:")
+print("Voulez vous afficher les informations d'un client ? (Oui/Non)")
+print()
 
-    # Exécuter une requête SELECT pour récupérer les données de la table 'car'
-    cursor.execute("SELECT Brand FROM car")
-    
+choice = demander_action_rent()
+
+if choice == "oui":
+    print()
+    print("Entrez l'identifiant du client que vous souhaitez examiner:")
+    print("1, 2, 3, 4, 5, 6")
+    print()
+
+    choice2 = demander_nombre_rent()
+
+    cursor.execute(f"SELECT * FROM customer WHERE customer_id = {choice2};")
+
+    rows = cursor.fetchall()
+
+    print()
+
+    for row in rows:
+        print(*row)
+
+else: 
+    pass
+
+print()
+print("Ensuite, voulez vous afficher les informations sur une voiture ? (Oui/Non)")
+print()
+
+choice3 = demander_action_rent()
+
+if choice3 == "oui":
+    print()
+    print("Entrez l'identifiant de la voiture que vous souhaitez examiner:")
+    print("19, 20, 21, 22, 23, 24")
+    print()
+
+    choice4 = demander_nombre_rent()
+
+    cursor.execute(f"SELECT * FROM car WHERE car_id = {choice4};")
+
     # Récupérer les résultats de la requête SELECT
     rows = cursor.fetchall()
 
-    # Afficher les résultats
-    print("Liste des marques de voitures :")
     for row in rows:
-        print(row[0])
+        print(*rows)
 
-    # Fermer le curseur et la connexion
-    cursor.close()
-    connexion.close()
 else:
-    print("La connexion a échoué!")
+    pass
+
+print()
+print("Ensuite, voulez vous prendre une voiture ? (Oui/Non)")
+print()
+
+choice5 = demander_action_rent()
+
+if choice5 == "oui":
+
+    print("Entrez l'identifiant de la voiture que vous voulez prendre:")
+    print("19, 20, 21, 22, 23, 24")
+    print()
+
+    choice6 = demander_nombre_rent()
+
+    cursor.execute(f"UPDATE car SET state = 'Occupée' WHERE car_id = {choice6};")
+
+    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+
+    print()
+    print("Maintenant choisissez votre identifiant client:")
+    print("1, 2, 3, 4, 5, 6")
+    print()
+
+    choice7 = demander_nombre_rent()
+
+    cursor.execute(f"UPDATE rent SET car_id = {choice6}, customer_id = {choice7};")
+
+    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+
+    print()
+    print("Maintenant entrez la date de rendu souhaité de la voiture:")
+    print()
+
+    choice8 = obtenir_date_rent()
+
+    cursor.execute(f"UPDATE rent SET start_date = CURDATE() WHERE id = {choice7};")
+    cursor.execute(f"UPDATE rent SET end_date = '{choice8}' WHERE customer_id = {choice7};")
+
+    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+
+else: 
+    pass
+
+
+    
+
+
