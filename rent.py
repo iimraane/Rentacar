@@ -91,8 +91,22 @@ if choice5 == "oui":
     print("19, 20, 21, 22, 23, 24")
     print()
 
-    choice6 = demander_nombre_rent()
+    while True:
+        choice6 = demander_nombre_rent()
 
+        cursor.execute(f"SELECT state FROM car WHERE car_id = {choice6}")
+        row = cursor.fetchone()
+
+        if row is None:
+            print("Cet identifiant de voiture n'existe pas. Veuillez réessayer.")
+            continue
+
+        if row[0] != "Libre":
+            print("Cette voiture est déjà prise. Veuillez choisir une autre.")
+        else:
+            break  # Sortir de la boucle si la voiture est libre
+
+    
     cursor.execute(f"UPDATE car SET state = 'Occupée' WHERE car_id = {choice6};")
 
     connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
@@ -136,12 +150,13 @@ if choice9 == "oui":
     
     rows = cursor.fetchall()
     
-    for row in rows:
-        print(*rows)
+    print(*rows)
 
     choice10 = demander_nombre_rent()
 
     cursor.execute(f"UPDATE car SET state = 'Libre' WHERE car_id = {choice10};")
+
+    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
     print()
     print("La voiture a bien été rendu !")
