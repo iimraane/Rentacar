@@ -23,7 +23,12 @@ cursor = connexion.cursor()
 if connexion.is_connected():
     print("Connexion réussie!")
 
-print("En continuant vous accepter nos CGU: https://octagonal-outrigger-c6f.notion.site/Les-CGU-094464a0eda142a9ad849f7e729965bf?pvs=4")
+else:
+    print()
+    print("Erreur de connection a la base de donnée")
+    sys.exit(2)
+
+print("En continuant vous accepter nos CGU: https://tinyurl.com/CGU-Rentacar")
 print()
 print()
 print("Bienvenue dans le logiciel 'Rentacar'")
@@ -32,65 +37,64 @@ print("Je vais proceder par étape:")
 print("Voulez vous afficher les informations d'un client ? (Oui/Non)")
 print()
 
-while True:
-    choice = demander_action_rent()
 
-    if choice == "oui":
+choice = demander_action_rent()
+
+if choice == "oui":
+
+    print()
+    print("Entrez l'identifiant du client que vous souhaitez examiner :")
+    print("1, 2, 3, 4, 5, 6")
+    print("Entrez 'Back' pour continuer")
+    print()
+
+    while True:
+        choice2 = demander_nombre_rent2()
+
+        if choice2 == "back":
+            break
+
+        cursor.execute(f"SELECT * FROM customer WHERE customer_id = {choice2};")
+        rows = cursor.fetchall()
         print()
-        print("Entrez l'identifiant du client que vous souhaitez examiner :")
-        print("1, 2, 3, 4, 5, 6")
-        print()
+        for row in rows:
+            print(*row)
 
-        while True:
-            choice2 = demander_nombre_rent()
-            cursor.execute(f"SELECT * FROM customer WHERE customer_id = {choice2};")
-            rows = cursor.fetchall()
-            print()
-            for row in rows:
-                print(*row)
+else:
+    pass
 
-            print("Voulez-vous consulter les informations d'un autre client ? (Oui/Non)")
-            choice12 = demander_action_rent()
-
-            if choice12 == "non":
-                break
-
-    else: 
-        break
 
 print()
 print("Ensuite, voulez vous afficher les informations sur une voiture ? (Oui/Non)")
 print()
 
-while True:
-    choice3 = demander_action_rent()
+choice3 = demander_action_rent()
 
-    if choice3 == "oui":
+if choice3 == "oui":
+    print()
+    print("Entrez l'identifiant de la voiture que vous souhaitez examiner:")
+    print("19, 20, 21, 22, 23, 24")
+    print("Entrez 'back' pour continuer")
+    print()
+
+    while True:
+        choice4 = demander_nombre_rent3()
+
+        cursor.execute(f"SELECT * FROM car WHERE car_id = {choice4};")
+
+        # Récupérer les résultats de la requête SELECT
+        rows = cursor.fetchall()
+
+        if choice4 == "back":
+            break
+
+        print("Car ID, Couleur, Plaque, Marque, Etat")
         print()
-        print("Entrez l'identifiant de la voiture que vous souhaitez examiner:")
-        print("19, 20, 21, 22, 23, 24")
-        print()
+        for row in rows:
+            print(row)  # Affichez chaque ligne, pas l'ensemble des résultats
 
-        while True:
-            choice4 = demander_nombre_rent()
-
-            cursor.execute(f"SELECT * FROM car WHERE car_id = {choice4};")
-
-            # Récupérer les résultats de la requête SELECT
-            rows = cursor.fetchall()
-
-            print("Car ID, Couleur, Plaque, Marque, Etat")
-            for row in rows:
-                print(row)  # Affichez chaque ligne, pas l'ensemble des résultats
-
-            print("Voulez-vous examiner les informations d'une autre voiture ? (Oui/Non)")
-            choice5 = demander_action_rent()
-
-            if choice5 == "non":
-                break
-
-    else:
-        break
+else:
+    pass
 
 print()
 print("Ensuite, voulez vous prendre une voiture ? (Oui/Non)")
@@ -101,24 +105,30 @@ while True:
 
     if choice5 == "oui":
         print("Entrez l'identifiant de la voiture que vous voulez prendre:")
-        print("19, 20, 21, 22, 23, 24")
-        print()
+        cursor.execute("SELECT car_id FROM car WHERE state = 'libre'")
+        rows = cursor.fetchall()
+        
+        print(*rows)
 
         while True:
             choice6 = demander_nombre_rent()
 
-            cursor.execute(f"SELECT state FROM car WHERE car_id = {choice6}")
-            row = cursor.fetchone()
-
-            if row is None:
+            if rows is None:
                 print("Cet identifiant de voiture n'existe pas. Veuillez réessayer.")
                 continue
 
-            if row[0] != "Libre":
-                print("Cette voiture est déjà prise. Veuillez choisir une autre.")
-            else:
-                break  # Sortir de la boucle si la voiture est libre
+            cursor.execute(f"SELECT state FROM car WHERE car_id = '{choice6}'")
+            rows = cursor.fetchone()
 
+            if rows == "libre":
+                break
+            
+            elif rows == "Occupée":
+                print("La voiture est deja prise, veuillez en choisir une autre")
+            
+            elif rows == None:
+                print("Cette voiture n'existe pas")
+            
         cursor.execute(f"UPDATE car SET state = 'Occupée' WHERE car_id = {choice6};")
         connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
@@ -127,7 +137,17 @@ while True:
         print("1, 2, 3, 4, 5, 6")
         print()
 
-        choice7 = demander_nombre_rent()
+        while True:
+            choice7 = demander_nombre_rent()
+
+            cursor.execute(f"SELECT last_name FROM customer WHERE customer_id = '{choice7}'")
+            rows = cursor.fetchone()
+
+            if not rows:
+              print("Cette utilisateur n'existe pas")
+            
+            else:
+                break
 
         cursor.execute(f"INSERT INTO rent (car_id, customer_id) VALUES ({choice6}, {choice7});")
         connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
@@ -150,7 +170,7 @@ while True:
         connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
         print()
-        print("Location enregistrée")
+        print("Location enregistrée !")
         print()
         
         break  # Sortir de la boucle principale une fois la location enregistrée
@@ -165,31 +185,25 @@ print()
 
 choice9 = demander_action_rent()
 
-while True:
-    choice9 = demander_action_rent()
+if choice9 == "oui":
 
-    if choice9 == "oui":
-        print()
-        print("Choisissez la voiture que vous souhaitez rendre:")
-        cursor.execute(f"SELECT car_id FROM car WHERE State = 'Occupée'")
-        
-        rows = cursor.fetchall()
-        
+    print()
+    print("Choisissez la voiture que vous souhaitez rendre:")
+    cursor.execute(f"SELECT car_id FROM car WHERE State = 'Occupée'")
+    
+    rows = cursor.fetchall()
+    
+    for row in rows:
         print(*rows)
 
-        choice10 = demander_nombre_rent()
+    choice10 = demander_nombre_rent()
 
-        cursor.execute(f"UPDATE car SET state = 'Libre' WHERE car_id = {choice10};")
+    cursor.execute(f"UPDATE car SET state = 'Libre' WHERE car_id = {choice10};")
 
-        connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
-        print()
-        print("La voiture a bien été rendue !")
-        
-        break  # Sortir de la boucle principale une fois la voiture rendue
-
-    else:
-        break  # Sortir de la boucle principale si l'utilisateur ne souhaite pas rendre de voiture
+    print()
+    print("La voiture a bien été rendu !")
 
 print()
 print("Voulez vous recommencez ? (Oui/Non)")
@@ -198,11 +212,14 @@ print()
 choice11 = demander_action_rent()
 
 if choice11 == "non":
-    sys.exit()
+    print("Vous allez quitter le programme")
+    sys.exit(2)
         
 else: 
     os.system(f"python \"{chemin_fichier}\"")
-
+    
+cursor.close()
+connexion.close()
 
 
 
