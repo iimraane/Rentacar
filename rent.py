@@ -3,6 +3,7 @@ from deflist_rent import *
 import sys
 import os
 from datetime import datetime, timedelta
+import time
 
 repertoire_script = os.path.dirname(os.path.abspath(__file__))
 nom_fichier = "rent.py"
@@ -88,6 +89,7 @@ if choice3 == "oui":
         if choice4 == "back":
             break
 
+        print()
         print("Car ID, Couleur, Plaque, Marque, Etat")
         print()
         for row in rows:
@@ -100,84 +102,83 @@ print()
 print("Ensuite, voulez vous prendre une voiture ? (Oui/Non)")
 print()
 
-while True:
-    choice5 = demander_action_rent()
+choice5 = demander_action_rent()
 
-    if choice5 == "oui":
-        print("Entrez l'identifiant de la voiture que vous voulez prendre:")
-        cursor.execute("SELECT car_id FROM car WHERE state = 'libre'")
-        rows = cursor.fetchall()
+if choice5 == "oui":
+    print("Entrez l'identifiant de la voiture que vous voulez prendre:")
+    cursor.execute("SELECT car_id FROM car WHERE state = 'libre'")
+    rows = cursor.fetchall()
+    
+    print(*rows)
+    
+
+    while True:
+        choice6 = demander_nombre_rent()
+
+        cursor.execute(f"SELECT state FROM car WHERE car_id = '{choice6}'")
+        rows = cursor.fetchone()
+
+        if rows == "libre":
+            break
         
-        print(*rows)
-
-        while True:
-            choice6 = demander_nombre_rent()
-
-            if rows is None:
-                print("Cet identifiant de voiture n'existe pas. Veuillez réessayer.")
-                continue
-
-            cursor.execute(f"SELECT state FROM car WHERE car_id = '{choice6}'")
-            rows = cursor.fetchone()
-
-            if rows == "libre":
-                break
-            
-            elif rows == "Occupée":
-                print("La voiture est deja prise, veuillez en choisir une autre")
-            
-            elif rows == None:
-                print("Cette voiture n'existe pas")
-            
-        cursor.execute(f"UPDATE car SET state = 'Occupée' WHERE car_id = {choice6};")
-        connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
-
-        print()
-        print("Maintenant choisissez votre identifiant client:")
-        print("1, 2, 3, 4, 5, 6")
-        print()
-
-        while True:
-            choice7 = demander_nombre_rent()
-
-            cursor.execute(f"SELECT last_name FROM customer WHERE customer_id = '{choice7}'")
-            rows = cursor.fetchone()
-
-            if not rows:
-              print("Cette utilisateur n'existe pas")
-            
-            else:
-                break
-
-        cursor.execute(f"INSERT INTO rent (car_id, customer_id) VALUES ({choice6}, {choice7});")
-        connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
-
-        print()
-        print("Maintenant entrez la date de rendu souhaité de la voiture:")
-        print()
-
-        while True:
-            choice8 = obtenir_date_rent()
-            difference_dates = choice8 - datetime.now().date()
-            if difference_dates.days > 30:
-               print("La date de location est trop éloignée dans le futur. Veuillez choisir une date dans les 30 prochains jours.")
-            else:
-                break
-
-        cursor.execute(f"UPDATE rent SET start_date = '{datetime.now().date()}' WHERE id = {choice7};")
-        cursor.execute(f"UPDATE rent SET end_date = '{choice8}' WHERE id = {choice7};")
-
-        connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
-
-        print()
-        print("Location enregistrée !")
-        print()
+        elif rows != "libre":
+            print("La voiture est deja prise, veuillez en choisir une autre")
         
-        break  # Sortir de la boucle principale une fois la location enregistrée
+        elif rows == None:
+            print("Cette voiture n'existe pas")
+        
+    cursor.execute(f"UPDATE car SET state = 'Occupée' WHERE car_id = {choice6};")
+    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
-    else:
-        break  # Sortir de la boucle principale si l'utilisateur ne souhaite pas louer de voiture
+    print()
+    print("Maintenant choisissez votre identifiant client:")
+    print("1, 2, 3, 4, 5, 6")
+    print()
 
+    while True:
+        choice7 = demander_nombre_rent()
+
+        cursor.execute(f"SELECT last_name FROM customer WHERE customer_id = '{choice7}'")
+        rows = cursor.fetchone()
+
+        if not rows:
+            print("Cette utilisateur n'existe pas")
+        
+        else:
+            break
+
+    cursor.execute(f"INSERT INTO rent (car_id, customer_id) VALUES ({choice6}, {choice7});")
+    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+
+    print()
+    print("Maintenant entrez la date de rendu souhaité de la voiture:")
+    print()
+
+    while True:
+        choice8 = obtenir_date_rent()
+        difference_dates = choice8 - datetime.now().date()
+        if difference_dates.days > 30:
+            print("La date de location est trop éloignée dans le futur. Veuillez choisir une date dans les 30 prochains jours.")
+        else:
+            break
+
+    cursor.execute(f"UPDATE rent SET start_date = '{datetime.now().date()}' WHERE id = {choice7};")
+    cursor.execute(f"UPDATE rent SET end_date = '{choice8}' WHERE id = {choice7};")
+
+    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+
+    print()
+    print(".")
+    time.sleep(1)
+    print("..")
+    time.sleep(1)   
+    print("...")
+    time.sleep(1)
+    print("....")
+    time.sleep(1)
+    print("Location enregistrée !")
+    print()
+    
 
 print()
 print("Voulez vous rendre une voiture ? (Oui/Non)")
