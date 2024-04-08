@@ -2,19 +2,22 @@ import mysql.connector
 from deflist_rent import *
 import sys
 import os
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
 repertoire_script = os.path.dirname(os.path.abspath(__file__))
 nom_fichier = "rent.py"
 chemin_fichier = os.path.join(repertoire_script, nom_fichier)
+dotenv_path = os.path.expanduser("~/Desktop/.env")  # Chemin vers votre fichier .env
+load_dotenv(dotenv_path)
 
 # Établir la connexion à la base de données
 connexion = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="imrane789",
-    database="VOITURE_TUTO"
+    host= os.getenv("db_host"),
+    user= os.getenv("db_user"),
+    password= os.getenv("db_password"),
+    database= os.getenv("db_database_name")
 )
 
 # Créer un objet curseur pour exécuter des requêtes SQL
@@ -73,7 +76,17 @@ elif choice_menu == "3":
 
     print()
     print("Entrez la date jusqu'a laquelle vous souhaitez avoir une voiture:")
-    date = demander_date_rent()
+
+    now = datetime.now()
+
+    while True:
+        date = demander_date_rent()
+        # Vérifier si la date de rendu est antérieure à la date actuelle
+        if date < now:
+            print("La date de rendu ne peut pas être antérieure à la date actuelle. Veuillez saisir une nouvelle date.")
+            continue
+        
+        break
 
     cursor.execute(f"SELECT * FROM car WHERE state = 'libre' AND car_id NOT IN ( SELECT car_id FROM rent WHERE start_date <= '{date}' AND end_date >= '{date}');")
     result = cursor.fetchall()
@@ -180,31 +193,33 @@ elif choice_menu == "4":
 
 elif choice_menu == "5":
 
-        print()
-        print("Choisissez la voiture que vous souhaitez rendre:")
         cursor.execute(f"SELECT car_id FROM car WHERE State = 'Occupée'")
-        
         rows = cursor.fetchall()
         
-        
-        print(*rows)
+        if not rows:
+            print("Il n'y a aucun voiture a rendre")
+        else:
+            print()
+            print("Choisissez la voiture que vous souhaitez rendre:")
+            print(*rows)
 
-        choice10 = demander_nombre_rent()
+            choice10 = demander_nombre_rent()
 
-        cursor.execute(f"UPDATE car SET state = 'libre' WHERE car_id = {choice10};")
+            cursor.execute(f"UPDATE car SET state = 'libre' WHERE car_id = {choice10};")
+            cursor.execute(f"DELETE FROM rent WHERE car_id = {choice10}")
 
-        connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+            connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
-        print()
-        print(".")
-        time.sleep(1)
-        print("..")
-        time.sleep(1)   
-        print("...")
-        time.sleep(1)
-        print("....")
-        time.sleep(1)
-        print("La voiture a bien été rendu !")
+            print()
+            print(".")
+            time.sleep(1)
+            print("..")
+            time.sleep(1)   
+            print("...")
+            time.sleep(1)
+            print("....")
+            time.sleep(1)
+            print("La voiture a bien été rendu !")
 
 
 elif choice_menu == "back":
