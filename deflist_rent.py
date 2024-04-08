@@ -27,7 +27,7 @@ def demander_nombre_rent3():
         # Demander à l'utilisateur son choix et le mettre en minuscules
         entree_utilisateur = input("Votre choix : ").lower()
         # Vérifier si le choix de l'utilisateur est valide
-        if entree_utilisateur in ["19", "20", "21", "22", "23", "24", "back"]:
+        if entree_utilisateur in ["1", "2", "3", "4", "5", "6", "back"]:
             return entree_utilisateur  # Retourner le choix de l'utilisateur
         else:
             print("Ce n'est pas une entrée valide. Veuillez réessayer.")  # Message d'erreur
