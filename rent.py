@@ -34,79 +34,62 @@ print()
 print()
 print("Bienvenue dans le logiciel 'Rentacar'")
 print()
-print("Je vais proceder par étape:")
-print("Voulez vous afficher les informations d'un client ? (Oui/Non)")
+print("Pour avoir des informations sur une client, entrez 1")
+print("Pour avoir des informations sur un voiture, entrez 2")
+print("Pour voir les voitures disponible, entrez 3")
+print("Pour louer une voiture, entrez 4")
+print("Pour rendre une voiture, entrez 5")
+print("Pour quitter, entrez 'Back'")
 print()
 
+choice_menu = demander_action_rent2()
 
-choice = demander_action_rent()
-
-if choice == "oui":
+if choice_menu == "1":
 
     print()
-    print("Entrez l'identifiant du client que vous souhaitez examiner :")
-    print("1, 2, 3, 4, 5, 6")
-    print("Entrez 'Back' pour continuer")
+    print("Voici les information des clients sous la forme ci-dessous:")
+    print("Client ID, Prénom, Nom, Numéro de téléphone, Email, Adresse, Age")
     print()
 
-    while True:
-        choice2 = demander_nombre_rent2()
-
-        if choice2 == "back":
-            break
-
-        cursor.execute(f"SELECT * FROM customer WHERE customer_id = {choice2};")
-        rows = cursor.fetchall()
-        print()
-        for row in rows:
-            print(*row)
-
-else:
-    pass
+    cursor.execute(f"SELECT * FROM customer;")
+    rows = cursor.fetchall()
+    for row in rows:
+        print(row)
 
 
-print()
-print("Ensuite, voulez vous afficher les informations sur une voiture ? (Oui/Non)")
-print()
+elif choice_menu == "2":
 
-choice3 = demander_action_rent()
-
-if choice3 == "oui":
-    print()
-    print("Entrez l'identifiant de la voiture que vous souhaitez examiner:")
-    print("19, 20, 21, 22, 23, 24")
-    print("Entrez 'back' pour continuer")
+    
+    print("Voici les information des voiture sous la forme ci-dessous:")
+    print("Car ID, Couleur, Plaque, Marque, Etat, Année")
     print()
 
-    while True:
-        choice4 = demander_nombre_rent3()
+    cursor.execute(f"SELECT * FROM car;")
+    rows = cursor.fetchall()
+    for row in rows:
+        print(row)
 
-        cursor.execute(f"SELECT * FROM car WHERE car_id = {choice4};")
+elif choice_menu == "3":
 
-        # Récupérer les résultats de la requête SELECT
-        rows = cursor.fetchall()
+    print()
+    print("Entrez la date jusqu'a laquelle vous souhaitez avoir une voiture:")
+    date = demander_date_rent()
 
-        if choice4 == "back":
-            break
+    cursor.execute(f"SELECT * FROM car WHERE state = 'libre' AND car_id NOT IN ( SELECT car_id FROM rent WHERE start_date <= '{date}' AND end_date >= '{date}');")
+    result = cursor.fetchall()
 
-        print()
-        print("Car ID, Couleur, Plaque, Marque, Etat")
-        print()
-        for row in rows:
-            print(row)  # Affichez chaque ligne, pas l'ensemble des résultats
+    if result:
+        print("Voitures disponibles à la réservation à la date", date, ":")
+        for row in result:
+            print(row)
+    else:
+        print("Aucune voiture disponible à la réservation à la date", date)
 
-else:
-    pass
 
-print()
-print("Ensuite, voulez vous prendre une voiture ? (Oui/Non)")
-print()
+elif choice_menu == "4":
 
-choice5 = demander_action_rent()
-
-if choice5 == "oui":
     print("Entrez l'identifiant de la voiture que vous voulez prendre:")
-    cursor.execute("SELECT car_id FROM car WHERE state = 'libre'")
+    cursor.execute("SELECT car_id FROM car WHERE state = 'libre';")
     rows = cursor.fetchall()
     
     print(*rows)
@@ -114,21 +97,22 @@ if choice5 == "oui":
 
     while True:
         choice6 = demander_nombre_rent()
-
+    
+    # Vérifier si l'identifiant saisi par l'utilisateur est parmi ceux affichés au début
+        if choice6 not in [row[0] for row in rows]:
+            print("Veuillez entrer un identifiant de voiture valide.")
+            continue
+    
         cursor.execute(f"SELECT state FROM car WHERE car_id = '{choice6}'")
         rows = cursor.fetchone()
 
-        if rows == "libre":
+        if rows[0] == "libre":
             break
         
-        elif rows != "libre":
-            print("La voiture est deja prise, veuillez en choisir une autre")
-        
-        elif rows == None:
+        elif rows[0] == None:
             print("Cette voiture n'existe pas")
-        
+            
     cursor.execute(f"UPDATE car SET state = 'Occupée' WHERE car_id = {choice6};")
-    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
     print()
     print("Maintenant choisissez votre identifiant client:")
@@ -137,33 +121,40 @@ if choice5 == "oui":
 
     while True:
         choice7 = demander_nombre_rent()
-
+        
+        # Vérifier si l'identifiant saisi par l'utilisateur est parmi ceux affichés au début
+        if choice7 not in [1, 2, 3, 4, 5, 6]:
+            print("Veuillez entrer un identifiant de client valide.")
+            continue
+        
         cursor.execute(f"SELECT last_name FROM customer WHERE customer_id = '{choice7}'")
         rows = cursor.fetchone()
 
         if not rows:
-            print("Cette utilisateur n'existe pas")
-        
+            print("Cet utilisateur n'existe pas")
         else:
             break
 
     cursor.execute(f"INSERT INTO rent (car_id, customer_id) VALUES ({choice6}, {choice7});")
-    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
     print()
     print("Maintenant entrez la date de rendu souhaité de la voiture:")
+    print("Un jour minimum !")
     print()
 
-    while True:
-        choice8 = obtenir_date_rent()
-        difference_dates = choice8 - datetime.now().date()
-        if difference_dates.days > 30:
-            print("La date de location est trop éloignée dans le futur. Veuillez choisir une date dans les 30 prochains jours.")
-        else:
-            break
+    now = datetime.now()
 
-    cursor.execute(f"UPDATE rent SET start_date = '{datetime.now().date()}' WHERE id = {choice7};")
-    cursor.execute(f"UPDATE rent SET end_date = '{choice8}' WHERE id = {choice7};")
+    while True:
+        choice8 = demander_date_rent()
+    
+    # Vérifier si la date de rendu est antérieure à la date actuelle
+        if choice8 < now:
+            print("La date de rendu ne peut pas être antérieure à la date actuelle. Veuillez saisir une nouvelle date.")
+            continue
+        
+        break
+    cursor.execute(f"UPDATE rent SET start_date = '{now}' WHERE customer_id = {choice7};")
+    cursor.execute(f"UPDATE rent SET end_date = '{choice8}' WHERE customer_id = {choice7};")
 
     connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
@@ -178,33 +169,53 @@ if choice5 == "oui":
     time.sleep(1)
     print("Location enregistrée !")
     print()
-    
-
-print()
-print("Voulez vous rendre une voiture ? (Oui/Non)")
-print()
-
-choice9 = demander_action_rent()
-
-if choice9 == "oui":
-
-    print()
-    print("Choisissez la voiture que vous souhaitez rendre:")
-    cursor.execute(f"SELECT car_id FROM car WHERE State = 'Occupée'")
-    
-    rows = cursor.fetchall()
-    
+    time.sleep(1)
+    print("Voici les informations de votre réservation:")
+    print("Voiture ID, Client ID, Date de debut, Date de fin")
+    cursor.execute(f"SELECT * FROM rent WHERE car_id = {choice6}")
+    rows = cursor.fetchall()    
     for row in rows:
+        print(*row)
+    time.sleep(2)
+
+elif choice_menu == "5":
+
+        print()
+        print("Choisissez la voiture que vous souhaitez rendre:")
+        cursor.execute(f"SELECT car_id FROM car WHERE State = 'Occupée'")
+        
+        rows = cursor.fetchall()
+        
+        
         print(*rows)
 
-    choice10 = demander_nombre_rent()
+        choice10 = demander_nombre_rent()
 
-    cursor.execute(f"UPDATE car SET state = 'Libre' WHERE car_id = {choice10};")
+        cursor.execute(f"UPDATE car SET state = 'libre' WHERE car_id = {choice10};")
 
-    connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
+        connexion.commit()  # Commit pour sauvegarder les modifications dans la base de données
 
-    print()
-    print("La voiture a bien été rendu !")
+        print()
+        print(".")
+        time.sleep(1)
+        print("..")
+        time.sleep(1)   
+        print("...")
+        time.sleep(1)
+        print("....")
+        time.sleep(1)
+        print("La voiture a bien été rendu !")
+
+
+elif choice_menu == "back":
+    print("Nous allons quitter le programme...")
+    sys.exit(2)
+
+else: 
+    print("Ce n'est pas un nombre valide")
+    print("Nous allons relancer le programme...")
+    time.sleep(2)
+    os.system(f"python \"{chemin_fichier}\"")
 
 print()
 print("Voulez vous recommencez ? (Oui/Non)")
