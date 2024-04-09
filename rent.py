@@ -62,12 +62,36 @@ if choice_menu == "1":
 
 elif choice_menu == "2":
 
+    print("Entrez une marque de voiture pour voir toutes les voitures de celle ci")
+    print("Attention au majuscules !")
+    print("Voici les marques que nous avons:")
+    print()
+    cursor.execute("SELECT Brand FROM car")
+    resultat = cursor.fetchall()
+    for row in resultat:
+        print(row[0])
+    print()
     
-    print("Voici les information des voiture sous la forme ci-dessous:")
+    mark2 = [row[0] for row in resultat]
+
+    while True:
+        mark = input("Entrez une marque :")
+        print()
+        cursor.execute("SELECT Brand FROM car")
+        resultat = cursor.fetchall()
+        if mark not in mark2:
+            print("Cette marque n'existe pas ou nous n'avons pas de voiture de cette marque")
+            continue
+        else: 
+            break
+
+        
+
+    print("Voici les information des voitures sous la forme ci-dessous:")
     print("Car ID, Couleur, Plaque, Marque, Etat, Année")
     print()
 
-    cursor.execute(f"SELECT * FROM car;")
+    cursor.execute("SELECT * FROM car WHERE Brand = %s", (mark,))
     rows = cursor.fetchall()
     for row in rows:
         print(row)
